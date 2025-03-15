@@ -2,14 +2,16 @@ package components
 
 import (
 	"fmt"
-	"slices"
-	"github.com/AllenDang/cimgui-go/imgui"
-	"imgui_try/types"
+	"imgui_try/database"
 	"imgui_try/theme"
+	"imgui_try/types"
+	"slices"
+
+	"github.com/AllenDang/cimgui-go/imgui"
 )
 
 // Render the to-do list application window and logic
-func RenderTodoApp() {
+func RenderTodoList(todo types.TodoLists) {
 	imgui.SetNextWindowSizeV(imgui.Vec2{X: 350, Y: 500}, imgui.CondFirstUseEver)
 	imgui.SetNextWindowSizeConstraints(imgui.Vec2{X: 300, Y: 400}, imgui.Vec2{X: 800, Y: 600})
 
@@ -31,12 +33,12 @@ func RenderTodoApp() {
 	imgui.PushStyleVarFloat(imgui.StyleVarWindowRounding, 6.0)
 	imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 8, Y: 4})
 
-	if imgui.BeginV("Todo List", nil, imgui.WindowFlagsNone) {
+	if imgui.BeginV(todo.Title, nil, imgui.WindowFlagsNone) {
 		imgui.PushItemWidth(imgui.ContentRegionAvail().X - 60)
 		imgui.PushStyleColorVec4(imgui.ColText, theme.Muted)
 		imgui.PushStyleColorVec4(imgui.ColFrameBg, theme.Background)
 		imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 8, Y: 5})
-		enterPressed := imgui.InputTextWithHint("##newtodo", "Add new task...", &types.NewTodoText, imgui.InputTextFlagsEnterReturnsTrue, nil)
+		enterPressed := imgui.InputTextWithHint("##newtodo", "Add new task...", &types.State.NewTodoText, imgui.InputTextFlagsEnterReturnsTrue, nil)
 		imgui.PopItemWidth()
 		imgui.PopStyleVar()
 		imgui.PopStyleColorV(2)
@@ -53,12 +55,14 @@ func RenderTodoApp() {
 		imgui.PopStyleVarV(3)
 
 		// Add the new item when Enter is pressed or the Add button is clicked
-		if (enterPressed || addButtonPressed) && types.NewTodoText != "" {
-			types.TodoList = append(types.TodoList, types.TodoItem{
-				Text:      types.NewTodoText,
+		if (enterPressed || addButtonPressed) && types.State.NewTodoText != "" {
+			todo.Items = append(todo.Items, types.TodoItem{
+				Text:      types.State.NewTodoText,
 				Completed: false,
 			})
-			types.NewTodoText = ""
+
+			database.CreateTodoItem(todo.Id, types.State.NewTodoText)
+			types.State.NewTodoText = ""
 		}
 
 		imgui.PushStyleVarVec2(imgui.StyleVarItemSpacing, imgui.Vec2{X: 0.0, Y: 10.0})
@@ -73,7 +77,7 @@ func RenderTodoApp() {
 		toDelete := -1
 
 		// Iterate through the to-do list and render each item
-		for i, item := range types.TodoList {
+		for i, item := range todo.Items {
 			imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 4, Y: 3})
 			imgui.PushStyleVarVec2(imgui.StyleVarItemSpacing, imgui.Vec2{X: 0.0, Y: 10.0})
 
@@ -83,7 +87,7 @@ func RenderTodoApp() {
 			imgui.PushStyleColorVec4(imgui.ColFrameBgActive, theme.AccentHovered)
 
 			checkboxId := fmt.Sprintf("##check%d", i)
-			if imgui.Checkbox(checkboxId, &types.TodoList[i].Completed) {
+			if imgui.Checkbox(checkboxId, &item.Completed) {
 				// Checkbox toggled: update completion status
 			}
 
@@ -93,10 +97,10 @@ func RenderTodoApp() {
 			// Display the to-do item text, grayed out if completed
 			if item.Completed {
 				imgui.PushStyleColorVec4(imgui.ColText, theme.Muted)
-				imgui.Text(types.TodoList[i].Text)
+				imgui.Text(item.Text)
 			} else {
 				imgui.PushStyleColorVec4(imgui.ColText, theme.Text)
-				imgui.Text(types.TodoList[i].Text)
+				imgui.Text(item.Text)
 			}
 			imgui.PopStyleColor()
 
@@ -124,25 +128,25 @@ func RenderTodoApp() {
 		}
 
 		// Remove the item marked for deletion
-		if toDelete >= 0 && toDelete < len(types.TodoList) {
-			types.TodoList = slices.Delete(types.TodoList, toDelete, toDelete+1)
+		if toDelete >= 0 && toDelete < len(todo.Items) {
+			todo.Items = slices.Delete(todo.Items, toDelete, toDelete+1)
 		}
 
 		imgui.EndChild()
 		imgui.Separator()
 
 		imgui.PushStyleColorVec4(imgui.ColText, theme.Accent)
-		imgui.Text(fmt.Sprintf("Total: %d items", len(types.TodoList)))
+		imgui.Text(fmt.Sprintf("Total: %d items", len(todo.Items)))
 
 		completed := 0
-		for _, item := range types.TodoList {
+		for _, item := range todo.Items {
 			if item.Completed {
 				completed++
 			}
 		}
 
-		if len(types.TodoList) > 0 {
-			completionRate := float32(completed) / float32(len(types.TodoList)) * 100
+		if len(todo.Items) > 0 {
+			completionRate := float32(completed) / float32(len(todo.Items)) * 100
 			imgui.SameLine()
 			imgui.Text(fmt.Sprintf("Completed: %.1f%%", completionRate))
 		}

@@ -16,7 +16,7 @@ func CreateDockspace() {
 	imgui.PushStyleColorVec4(imgui.ColDragDropTarget, theme.Accent)
 	imgui.PushStyleColorVec4(imgui.ColTitleBg, theme.Background)
 	imgui.PushStyleColorVec4(imgui.ColTitleBgActive, theme.Background)
-	imgui.PushStyleVarVec2(imgui.StyleVarWindowPadding, imgui.Vec2{X: 0, Y: 0})
+	imgui.PushStyleVarVec2(imgui.StyleVarWindowPadding, imgui.Vec2{X: 0, Y: 30})
 
 	imgui.SetNextWindowPos(viewport.Pos())
 	imgui.SetNextWindowSize(viewport.Size())

@@ -1,12 +1,13 @@
 package main
 
 import (
-	"runtime"
-
 	"imgui_try/components"
+	"imgui_try/database"
 	"imgui_try/theme"
 	"imgui_try/types"
 	"imgui_try/utils"
+	"slices"
+	"runtime"
 
 	"github.com/AllenDang/cimgui-go/backend"
 	"github.com/AllenDang/cimgui-go/backend/glfwbackend"
@@ -21,6 +22,8 @@ func init() {
 }
 
 func main() {
+	database.New().Migrate()
+
 	currentBackend, _ = backend.CreateBackend(glfwbackend.NewGLFWBackend())
 	currentBackend.SetBgColor(theme.Background)
 	currentBackend.CreateWindow("Simple Todo App", types.WindowWidth, types.WindowHeight)
@@ -31,26 +34,24 @@ func main() {
 	io.SetConfigFlags(io.ConfigFlags() | imgui.ConfigFlagsDockingEnable)
 	io.SetFontDefault(fonts[0].Font)
 
+	types.State = types.AppState{
+		IsModalOpen:    false,
+		NewTodoText:    "",
+		NewListTitle:   "",
+		CurrentListIds: []int{},
+		Todos:          database.GetAllTodos(), // Get all todos from the database
+	}
+
 	currentBackend.Run(renderLoop)
 }
 
 func renderLoop() {
+	components.RenderMenubar()
 	components.CreateDockspace()
-	renderMenubar()
-	components.RenderTodoApp()
-}
-
-func renderMenubar() {
-    if imgui.BeginMainMenuBar() {
-        if imgui.BeginMenu("File") {
-            if imgui.BeginMenu("Add New List") {
-            	if imgui.MenuItemBool("Add New List") {
-					types.TodoList = append(types.TodoList, types.TodoItem{Text: "New List"})
-				}
-				imgui.EndMenu()
-            }
-            imgui.EndMenu()
-        }
-        imgui.EndMainMenuBar()
-    }
+	
+	for _, todo := range types.State.Todos {
+		if slices.Contains(types.State.CurrentListIds, todo.Id) {
+			components.RenderTodoList(todo)
+		}
+	}
 }
