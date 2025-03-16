@@ -13,9 +13,8 @@ func CreateDockspace() {
 
 	imgui.PushStyleColorVec4(imgui.ColWindowBg, theme.Background)
 	imgui.PushStyleColorVec4(imgui.ColDockingEmptyBg, theme.Background)
-	imgui.PushStyleColorVec4(imgui.ColDragDropTarget, theme.Accent)
-	imgui.PushStyleColorVec4(imgui.ColTitleBg, theme.Background)
-	imgui.PushStyleColorVec4(imgui.ColTitleBgActive, theme.Background)
+	imgui.PushStyleColorVec4(imgui.ColDockingPreview, theme.Accent)
+	
 	imgui.PushStyleVarVec2(imgui.StyleVarWindowPadding, imgui.Vec2{X: 0, Y: 30})
 
 	imgui.SetNextWindowPos(viewport.Pos())
@@ -35,6 +34,6 @@ func CreateDockspace() {
 
 	imgui.DockSpace(types.DockspaceID)
 	imgui.PopStyleVar()
-	imgui.PopStyleColorV(5)
+	imgui.PopStyleColorV(3)
 	imgui.End() // End of dockspace window
 }
