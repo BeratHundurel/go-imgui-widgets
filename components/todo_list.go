@@ -19,13 +19,11 @@ func init() {
 		Todos:          database.New().GetAllTodos(), // Get all todos from the database
 		NewTodoTexts:   make(map[int]string),         // Initialize the map
 	}
-
-	fmt.Println(types.State.Todos[1].Items)
 }
 
 // Render the to-do list application window and logic
 func RenderTodoList() {
-	for _, todo := range types.State.Todos {
+	for ti, todo := range types.State.Todos {
 		if slices.Contains(types.State.CurrentListIds, todo.Id) {
 
 			imgui.SetNextWindowSizeV(imgui.Vec2{X: 350, Y: 500}, imgui.CondFirstUseEver)
@@ -51,22 +49,21 @@ func RenderTodoList() {
 			imgui.PushStyleVarFloat(imgui.StyleVarWindowRounding, 6.0)
 			imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 8, Y: 4})
 
-			if imgui.BeginV(todo.Title, nil, imgui.WindowFlagsDockNodeHost) {
+			if imgui.BeginV(todo.Title, nil, imgui.WindowFlagsNone) {
+				newTodoText := types.State.NewTodoTexts[todo.Id]
 				imgui.PushItemWidth(imgui.ContentRegionAvail().X - 60)
 				imgui.PushStyleColorVec4(imgui.ColText, theme.Muted)
 				imgui.PushStyleColorVec4(imgui.ColFrameBg, theme.Background)
 				imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 8, Y: 5})
-				newTodoText := types.State.NewTodoTexts[todo.Id]
+
 				enterPressed := imgui.InputTextWithHint("##"+todo.Title, "Add new task...", &newTodoText, imgui.InputTextFlagsEnterReturnsTrue, nil)
 				types.State.NewTodoTexts[todo.Id] = newTodoText
+
 				imgui.PopItemWidth()
 				imgui.PopStyleVar()
 				imgui.PopStyleColorV(2)
-				imgui.SameLine() // Add button for creating new to-do items
 
-				if enterPressed {
-					fmt.Println(newTodoText)
-				}
+				imgui.SameLine() // Add button for creating new to-do items
 
 				imgui.PushStyleColorVec4(imgui.ColButton, theme.Accent)
 				imgui.PushStyleColorVec4(imgui.ColButtonHovered, theme.AccentHovered)
@@ -74,27 +71,22 @@ func RenderTodoList() {
 				imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 12.0, Y: 6.0})
 				imgui.PushStyleVarVec2(imgui.StyleVarButtonTextAlign, imgui.Vec2{X: 0.5, Y: 0.5})
 				imgui.PushStyleVarVec2(imgui.StyleVarItemSpacing, imgui.Vec2{X: 0.0, Y: 10.0})
+
 				addButtonPressed := imgui.ButtonV("Add", imgui.Vec2{X: 50, Y: 0})
+
 				imgui.PopStyleColorV(4)
 				imgui.PopStyleVarV(3)
-				
+
 				newTodoText = types.State.NewTodoTexts[todo.Id]
 
 				// Add the new item when Enter is pressed or the Add button is clicked
 				if (enterPressed || addButtonPressed) && newTodoText != "" {
-
-					fmt.Println("New Todo Text: ", newTodoText)
 					todo.Items = append(todo.Items, types.TodoItem{
 						Text:      newTodoText,
 						Completed: false,
 					})
 
-					for i, t := range types.State.Todos {
-						if t.Id == todo.Id {
-							types.State.Todos[i] = todo
-							break
-						}
-					}
+					types.State.Todos[ti] = todo
 
 					database.New().CreateTodoItem(todo.Id, newTodoText)
 					newTodoText = ""
@@ -123,7 +115,8 @@ func RenderTodoList() {
 
 					checkboxId := fmt.Sprintf("##check%d", i)
 					if imgui.Checkbox(checkboxId, &item.Completed) {
-						database.New().CompleteTodoItem(item.Id)
+						types.State.Todos[ti].Items[i].Completed = item.Completed
+						database.New().ChangeStatusTodoItem(item.Id, item.Completed)
 					}
 
 					imgui.PopStyleColorV(4)
@@ -163,10 +156,10 @@ func RenderTodoList() {
 				}
 
 				if toDelete >= 0 {
-					fmt.Println(toDelete)
 					for i, item := range todo.Items {
 						if item.Id == toDelete {
 							todo.Items = slices.Delete(todo.Items, i, i+1)
+							types.State.Todos[ti].Items = todo.Items
 							break
 						}
 					}

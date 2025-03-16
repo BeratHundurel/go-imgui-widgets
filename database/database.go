@@ -16,7 +16,7 @@ type Service interface {
 	CreateTodoList(title string)
 	CreateTodoItem(todoListID int, text string)
 	DeleteTodoItem(todoItemID int)
-	CompleteTodoItem(todoItemID int)
+	ChangeStatusTodoItem(todoItemID int, completed bool)
 }
 
 type service struct {
@@ -45,7 +45,7 @@ func New() Service {
 	return dbInstance
 }
 
-func  (s *service )GetAllTodos() []types.TodoLists {
+func (s *service) GetAllTodos() []types.TodoLists {
 	var todos []types.TodoLists
 	s.db.Preload("Items").Find(&todos)
 	return todos
@@ -69,8 +69,8 @@ func (s *service) DeleteTodoItem(todoItemID int) {
 	s.db.Delete(&types.TodoItem{}, todoItemID)
 }
 
-func (s *service) CompleteTodoItem(todoItemID int) {
-	s.db.Model(&types.TodoItem{}).Where("id = ?", todoItemID).Update("completed", true)
+func (s *service) ChangeStatusTodoItem(todoItemID int, completed bool) {
+	s.db.Model(&types.TodoItem{}).Where("id = ?", todoItemID).Update("completed", completed)
 }
 
 func (s *service) Migrate() {
