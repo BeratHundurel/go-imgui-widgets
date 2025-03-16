@@ -11,6 +11,12 @@ import (
 // Service represents a service that interacts with a database.
 type Service interface {
 	Migrate()
+	GetAllTodos() []types.TodoLists
+	GetTodoList(id int) types.TodoLists
+	CreateTodoList(title string)
+	CreateTodoItem(todoListID int, text string)
+	DeleteTodoItem(todoItemID int)
+	CompleteTodoItem(todoItemID int)
 }
 
 type service struct {
@@ -39,28 +45,32 @@ func New() Service {
 	return dbInstance
 }
 
-func GetAllTodos() []types.TodoLists {
-	db := dbInstance.db
+func  (s *service )GetAllTodos() []types.TodoLists {
 	var todos []types.TodoLists
-	db.Find(&todos)
+	s.db.Preload("Items").Find(&todos)
 	return todos
 }
 
-func GetTodoList(id int) types.TodoLists {
-	db := dbInstance.db
+func (s *service) GetTodoList(id int) types.TodoLists {
 	var todo types.TodoLists
-	db.Preload("Items").First(&todo, id)
+	s.db.Preload("Items").First(&todo, id)
 	return todo
 }
 
-func CreateTodoList(title string) {
-	db := dbInstance.db
-	db.Create(&types.TodoLists{Title: title})
+func (s *service) CreateTodoList(title string) {
+	s.db.Create(&types.TodoLists{Title: title})
 }
 
-func CreateTodoItem(todoListID int, text string) {
-	db := dbInstance.db
-	db.Create(&types.TodoItem{TodoListID: todoListID, Text: text})
+func (s *service) CreateTodoItem(todoListID int, text string) {
+	s.db.Create(&types.TodoItem{TodoListID: todoListID, Text: text, Completed: false})
+}
+
+func (s *service) DeleteTodoItem(todoItemID int) {
+	s.db.Delete(&types.TodoItem{}, todoItemID)
+}
+
+func (s *service) CompleteTodoItem(todoItemID int) {
+	s.db.Model(&types.TodoItem{}).Where("id = ?", todoItemID).Update("completed", true)
 }
 
 func (s *service) Migrate() {

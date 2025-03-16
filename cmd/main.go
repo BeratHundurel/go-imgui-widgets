@@ -6,7 +6,6 @@ import (
 	"imgui_try/theme"
 	"imgui_try/types"
 	"imgui_try/utils"
-	"slices"
 	"runtime"
 
 	"github.com/AllenDang/cimgui-go/backend"
@@ -19,11 +18,10 @@ var currentBackend backend.Backend[glfwbackend.GLFWWindowFlags]
 
 func init() {
 	runtime.LockOSThread()
+	database.New().Migrate()
 }
 
 func main() {
-	database.New().Migrate()
-
 	currentBackend, _ = backend.CreateBackend(glfwbackend.NewGLFWBackend())
 	currentBackend.SetBgColor(theme.Background)
 	currentBackend.CreateWindow("Simple Todo App", types.WindowWidth, types.WindowHeight)
@@ -34,24 +32,11 @@ func main() {
 	io.SetConfigFlags(io.ConfigFlags() | imgui.ConfigFlagsDockingEnable)
 	io.SetFontDefault(fonts[0].Font)
 
-	types.State = types.AppState{
-		IsModalOpen:    false,
-		NewTodoText:    "",
-		NewListTitle:   "",
-		CurrentListIds: []int{},
-		Todos:          database.GetAllTodos(), // Get all todos from the database
-	}
-
 	currentBackend.Run(renderLoop)
 }
 
 func renderLoop() {
 	components.RenderMenubar()
 	components.CreateDockspace()
-	
-	for _, todo := range types.State.Todos {
-		if slices.Contains(types.State.CurrentListIds, todo.Id) {
-			components.RenderTodoList(todo)
-		}
-	}
+	components.RenderTodoList()
 }

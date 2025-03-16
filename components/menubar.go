@@ -36,7 +36,7 @@ func RenderMenubar() {
 					types.State.Todos = append(types.State.Todos, newList)
 
 					// Save the new list to the database
-					database.CreateTodoList(types.State.NewListTitle)
+					database.New().CreateTodoList(types.State.NewListTitle)
 
 					types.State.IsModalOpen = false
 					types.State.NewListTitle = ""

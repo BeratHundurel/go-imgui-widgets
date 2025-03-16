@@ -6,10 +6,10 @@ import (
 
 type AppState struct {
 	IsModalOpen bool
-	NewTodoText string
 	NewListTitle string
 	CurrentListIds []int
 	Todos []TodoLists
+	NewTodoTexts map[int]string
 }
 
 
@@ -19,3 +19,4 @@ var (
 	DockspaceID  imgui.ID
 	State    AppState
 )
+
