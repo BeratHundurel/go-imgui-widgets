@@ -1,5 +1,5 @@
-github.com/AllenDang/cimgui-go v1.3.0 h1:iFK0SBjfOnd8qCnn8PLMFh/uTceuJGN0hVXRxokMz20=
-github.com/AllenDang/cimgui-go v1.3.0/go.mod h1:1i5vebTbRcCAlui+AUn3A3U0V2tu/qImW0NoLr+/Fek=
+github.com/AllenDang/cimgui-go v1.3.1 h1:2f33a7GHJwRofH0CRQbUTXywazfph/K5LQLKyOBv24k=
+github.com/AllenDang/cimgui-go v1.3.1/go.mod h1:Fuj3G2E3zd2bMQxmhuSPSFFl41MwS+MhyZ6DHgYq/YM=
 github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
 github.com/jinzhu/now v1.1.5 h1:/o9tlHleP7gOFmsnYNz3RGnqzefHA47wQpKrrdTIwXQ=

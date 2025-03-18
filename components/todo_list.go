@@ -29,52 +29,31 @@ func RenderTodoList() {
 			imgui.SetNextWindowSizeV(imgui.Vec2{X: 350, Y: 500}, imgui.CondFirstUseEver)
 			imgui.SetNextWindowSizeConstraints(imgui.Vec2{X: 300, Y: 400}, imgui.Vec2{X: 800, Y: 600})
 
-			imgui.PushStyleColorVec4(imgui.ColWindowBg, theme.ElementBg)
-			imgui.PushStyleColorVec4(imgui.ColText, theme.Text)
-			imgui.PushStyleColorVec4(imgui.ColTitleBg, theme.Background)
-			imgui.PushStyleColorVec4(imgui.ColTitleBgActive, theme.Background)
-			imgui.PushStyleColorVec4(imgui.ColDockingEmptyBg, theme.Background)
-			imgui.PushStyleColorVec4(imgui.ColSeparator, theme.Accent)
-			imgui.PushStyleColorVec4(imgui.ColBorder, theme.Accent)
-			imgui.PushStyleColorVec4(imgui.ColResizeGrip, theme.Accent)
-			imgui.PushStyleColorVec4(imgui.ColResizeGripHovered, theme.AccentHovered)
-			imgui.PushStyleColorVec4(imgui.ColResizeGripActive, theme.AccentHovered)
-			imgui.PushStyleColorVec4(imgui.ColTitleBgCollapsed, theme.Accent)
-			imgui.PushStyleColorVec4(imgui.ColFrameBg, theme.ElementBg)
-			imgui.PushStyleColorVec4(imgui.ColFrameBgActive, theme.ElementBg)
-			imgui.PushStyleColorVec4(imgui.ColScrollbarBg, theme.ElementBg)
-			imgui.PushStyleColorVec4(imgui.ColScrollbarGrab, theme.Accent)
-
 			imgui.PushStyleVarFloat(imgui.StyleVarFrameRounding, 4.0)
 			imgui.PushStyleVarFloat(imgui.StyleVarWindowRounding, 6.0)
-			imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 8, Y: 4})
-
+			imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 8, Y: 8})
+			
 			if imgui.BeginV(todo.Title, nil, imgui.WindowFlagsNone) {
 				newTodoText := types.State.NewTodoTexts[todo.Id]
+				
 				imgui.PushItemWidth(imgui.ContentRegionAvail().X - 60)
 				imgui.PushStyleColorVec4(imgui.ColText, theme.Muted)
 				imgui.PushStyleColorVec4(imgui.ColFrameBg, theme.Background)
 				imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 8, Y: 5})
-
+				
 				enterPressed := imgui.InputTextWithHint("##"+todo.Title, "Add new task...", &newTodoText, imgui.InputTextFlagsEnterReturnsTrue, nil)
 				types.State.NewTodoTexts[todo.Id] = newTodoText
-
+				
 				imgui.PopItemWidth()
 				imgui.PopStyleVar()
 				imgui.PopStyleColorV(2)
 
 				imgui.SameLine() // Add button for creating new to-do items
 
-				imgui.PushStyleColorVec4(imgui.ColButton, theme.Accent)
-				imgui.PushStyleColorVec4(imgui.ColButtonHovered, theme.AccentHovered)
-				imgui.PushStyleColorVec4(imgui.ColText, theme.Text)
 				imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 12.0, Y: 6.0})
 				imgui.PushStyleVarVec2(imgui.StyleVarButtonTextAlign, imgui.Vec2{X: 0.5, Y: 0.5})
 				imgui.PushStyleVarVec2(imgui.StyleVarItemSpacing, imgui.Vec2{X: 0.0, Y: 10.0})
-
 				addButtonPressed := imgui.ButtonV("Add", imgui.Vec2{X: 50, Y: 0})
-
-				imgui.PopStyleColorV(4)
 				imgui.PopStyleVarV(3)
 
 				newTodoText = types.State.NewTodoTexts[todo.Id]
@@ -118,18 +97,18 @@ func RenderTodoList() {
 						types.State.Todos[ti].Items[i].Completed = item.Completed
 						database.New().ChangeStatusTodoItem(item.Id, item.Completed)
 					}
-
+					
+					imgui.PopStyleVarV(2)
 					imgui.PopStyleColorV(4)
 					imgui.SameLine()
 
 					// Display the to-do item text, grayed out if completed
 					if item.Completed {
 						imgui.PushStyleColorVec4(imgui.ColText, theme.Muted)
-						imgui.Text(item.Text)
 					} else {
 						imgui.PushStyleColorVec4(imgui.ColText, theme.Text)
-						imgui.Text(item.Text)
 					}
+					imgui.Text(item.Text)
 					imgui.PopStyleColor()
 
 					imgui.SameLine()
@@ -141,7 +120,6 @@ func RenderTodoList() {
 
 					imgui.PushStyleColorVec4(imgui.ColButton, theme.Danger)
 					imgui.PushStyleColorVec4(imgui.ColButtonHovered, theme.DangerHovered)
-					imgui.PushStyleColorVec4(imgui.ColText, theme.Text)
 
 					imgui.PushStyleVarFloat(imgui.StyleVarFrameRounding, 3.0)
 					imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 12.0, Y: 6.0})
@@ -151,8 +129,8 @@ func RenderTodoList() {
 						toDelete = item.Id
 					}
 
-					imgui.PopStyleVarV(5)
-					imgui.PopStyleColorV(3)
+					imgui.PopStyleVarV(3)
+					imgui.PopStyleColorV(2)
 				}
 
 				if toDelete >= 0 {
@@ -184,11 +162,12 @@ func RenderTodoList() {
 					imgui.SameLine()
 					imgui.Text(fmt.Sprintf("Completed: %.1f%%", completionRate))
 				}
+				
+				imgui.PopStyleColor()
 			}
+			
 			imgui.PopStyleVarV(3)
-			imgui.PopStyleColorV(15)
 			imgui.End()
-
 		}
 	}
 }

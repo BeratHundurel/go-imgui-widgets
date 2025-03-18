@@ -2,6 +2,7 @@ package components
 
 import (
 	"imgui_try/database"
+	"imgui_try/theme"
 	"imgui_try/types"
 	"slices"
 
@@ -10,32 +11,47 @@ import (
 
 func RenderMenubar() {
 	if imgui.BeginMainMenuBar() {
-		if imgui.BeginMenu("File") {
-			// Add New List option
-			if imgui.MenuItemBool("Add New List") {
-				types.State.IsModalOpen = true
-			}
+
+		if imgui.BeginMenu("Add New") {
+			types.State.IsModalOpen = true
 			imgui.EndMenu()
 		}
 
-		// Show modal if types.ShowModal is true
 		if types.State.IsModalOpen {
 			imgui.OpenPopupStr("New To-Do List")
+			io := imgui.CurrentIO()
+			displaySizeX := io.DisplaySize().X
+			displaySizeY := io.DisplaySize().Y
+
+			centerPos := imgui.Vec2{
+				X: displaySizeX / 2,
+				Y: displaySizeY / 2,
+			}
+
+			// Set the modal position at the center
+			imgui.SetNextWindowPosV(
+				centerPos,
+				imgui.CondAlways,
+				imgui.Vec2{X: 0.5, Y: 0.5}, // Centering pivot
+			)
+
+			imgui.SetNextWindowSize(imgui.Vec2{X: 400, Y: 400})
 		}
 
-		// Create the modal window for adding a new list
-		if imgui.BeginPopupModalV("New To-Do List", nil, imgui.WindowFlagsAlwaysAutoResize) {
-			// Title input field
-			imgui.InputTextWithHint("Title", "Enter a title for the new list...", &types.State.NewListTitle, 0, nil)
+		imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 12, Y: 12})
+		imgui.PushStyleVarVec2(imgui.StyleVarItemSpacing, imgui.Vec2{X: 12, Y: 16})
 
-			// Add button
-			if imgui.Button("Add") {
+		if imgui.BeginPopupModalV("New To-Do List", nil, imgui.WindowFlagsAlwaysAutoResize) {
+
+			imgui.InputTextWithHint("##NewToDoTitle", "Enter a title", &types.State.NewListTitle, 0, nil)
+
+			imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 8, Y: 8})
+			imgui.PushStyleVarFloat(imgui.StyleVarFrameRounding, 4.0)
+			if imgui.ButtonV("Add", imgui.Vec2{X: 100, Y: 0}) {
 				if types.State.NewListTitle != "" {
-					// Create a new to-do list and append it
 					newList := types.TodoLists{Title: types.State.NewListTitle}
 					types.State.Todos = append(types.State.Todos, newList)
 
-					// Save the new list to the database
 					database.New().CreateTodoList(types.State.NewListTitle)
 
 					types.State.IsModalOpen = false
@@ -44,16 +60,26 @@ func RenderMenubar() {
 				}
 			}
 
+			imgui.SameLine()
+
 			// Cancel button
-			if imgui.Button("Cancel") {
+			imgui.PushStyleColorVec4(imgui.ColButton, theme.Danger)
+			imgui.PushStyleColorVec4(imgui.ColButtonHovered, theme.DangerHovered)
+			imgui.PushStyleColorVec4(imgui.ColButtonActive, theme.DangerHovered)
+			if imgui.ButtonV("Cancel", imgui.Vec2{X: 100, Y: 0}) {
 				types.State.IsModalOpen = false
 				types.State.NewListTitle = "" // Clear the title input
 				imgui.CloseCurrentPopup()
 			}
-			
+
+			imgui.PopStyleVarV(2)
+			imgui.PopStyleColorV(3)
+
 			// End the modal window
 			imgui.EndPopup()
 		}
+
+		imgui.PopStyleVarV(2)
 
 		// "Lists" menu for displaying all available lists
 		if imgui.BeginMenu("Lists") {
