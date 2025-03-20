@@ -40,8 +40,17 @@ func RenderMenubar() {
 
 		imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 12, Y: 12})
 		imgui.PushStyleVarVec2(imgui.StyleVarItemSpacing, imgui.Vec2{X: 12, Y: 16})
+		imgui.PushStyleVarFloat(imgui.StyleVarWindowRounding, 12)
 
 		if imgui.BeginPopupModalV("New To-Do List", nil, imgui.WindowFlagsAlwaysAutoResize) {
+
+			size := imgui.CalcItemWidth() + 24
+			avail := imgui.ContentRegionAvail().X
+
+			off := (avail - size) / 2
+			if off > 0 {
+				imgui.SetCursorPosX(imgui.CursorPosX() + off)
+			}
 
 			imgui.InputTextWithHint("##NewToDoTitle", "Enter a title", &types.State.NewListTitle, 0, nil)
 
@@ -61,7 +70,7 @@ func RenderMenubar() {
 			}
 
 			imgui.SameLine()
-
+			
 			// Cancel button
 			imgui.PushStyleColorVec4(imgui.ColButton, theme.Danger)
 			imgui.PushStyleColorVec4(imgui.ColButtonHovered, theme.DangerHovered)
@@ -79,7 +88,7 @@ func RenderMenubar() {
 			imgui.EndPopup()
 		}
 
-		imgui.PopStyleVarV(2)
+		imgui.PopStyleVarV(3)
 
 		// "Lists" menu for displaying all available lists
 		if imgui.BeginMenu("Lists") {
