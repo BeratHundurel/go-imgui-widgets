@@ -91,7 +91,7 @@ func RenderMenubar() {
 		imgui.PopStyleVarV(3)
 
 		// "Lists" menu for displaying all available lists
-		if imgui.BeginMenu("Lists") {
+		if imgui.BeginMenu("Available Lists") {
 			// Display all available lists as selectable items
 			for _, list := range types.State.Todos {
 				isSelected := slices.Contains(types.State.CurrentListIds, list.Id)
