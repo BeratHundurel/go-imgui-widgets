@@ -10,7 +10,9 @@ import (
 )
 
 func RenderMenubar() {
+	imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 24, Y: 12})
 	if imgui.BeginMainMenuBar() {
+		imgui.PushStyleVarVec2(imgui.StyleVarItemSpacing, imgui.Vec2{X: 24, Y: 12})
 
 		if imgui.BeginMenu("Add New") {
 			types.State.IsModalOpen = true
@@ -19,40 +21,17 @@ func RenderMenubar() {
 
 		if types.State.IsModalOpen {
 			imgui.OpenPopupStr("New To-Do List")
-			io := imgui.CurrentIO()
-			displaySizeX := io.DisplaySize().X
-			displaySizeY := io.DisplaySize().Y
-
-			centerPos := imgui.Vec2{
-				X: displaySizeX / 2,
-				Y: displaySizeY / 2,
-			}
-
-			// Set the modal position at the center
-			imgui.SetNextWindowPosV(
-				centerPos,
-				imgui.CondAlways,
-				imgui.Vec2{X: 0.5, Y: 0.5}, // Centering pivot
-			)
-
 			imgui.SetNextWindowSize(imgui.Vec2{X: 400, Y: 400})
 		}
 
 		imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 12, Y: 12})
 		imgui.PushStyleVarVec2(imgui.StyleVarItemSpacing, imgui.Vec2{X: 12, Y: 16})
 		imgui.PushStyleVarFloat(imgui.StyleVarWindowRounding, 12)
-
 		if imgui.BeginPopupModalV("New To-Do List", nil, imgui.WindowFlagsAlwaysAutoResize) {
-
-			size := imgui.CalcItemWidth() + 24
-			avail := imgui.ContentRegionAvail().X
-
-			off := (avail - size) / 2
-			if off > 0 {
-				imgui.SetCursorPosX(imgui.CursorPosX() + off)
-			}
-
+			
+			imgui.PushItemWidth(380)
 			imgui.InputTextWithHint("##NewToDoTitle", "Enter a title", &types.State.NewListTitle, 0, nil)
+			imgui.PopItemWidth()
 
 			imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 8, Y: 8})
 			imgui.PushStyleVarFloat(imgui.StyleVarFrameRounding, 4.0)
@@ -70,33 +49,32 @@ func RenderMenubar() {
 			}
 
 			imgui.SameLine()
-			
-			// Cancel button
+
 			imgui.PushStyleColorVec4(imgui.ColButton, theme.Danger)
 			imgui.PushStyleColorVec4(imgui.ColButtonHovered, theme.DangerHovered)
 			imgui.PushStyleColorVec4(imgui.ColButtonActive, theme.DangerHovered)
 			if imgui.ButtonV("Cancel", imgui.Vec2{X: 100, Y: 0}) {
 				types.State.IsModalOpen = false
-				types.State.NewListTitle = "" // Clear the title input
+				types.State.NewListTitle = "" 
 				imgui.CloseCurrentPopup()
 			}
 
 			imgui.PopStyleVarV(2)
 			imgui.PopStyleColorV(3)
 
-			// End the modal window
 			imgui.EndPopup()
 		}
 
 		imgui.PopStyleVarV(3)
 
-		// "Lists" menu for displaying all available lists
 		if imgui.BeginMenu("Available Lists") {
-			// Display all available lists as selectable items
+			imgui.PushStyleVarVec2(imgui.StyleVarFramePadding, imgui.Vec2{X: 12, Y: 24})
+			imgui.PushStyleVarVec2(imgui.StyleVarItemSpacing, imgui.Vec2{X: 12, Y: 24})
+			itemSize := imgui.Vec2{X: 200, Y: 0} 
 			for _, list := range types.State.Todos {
 				isSelected := slices.Contains(types.State.CurrentListIds, list.Id)
-				if imgui.SelectableBoolV(list.Title, isSelected, imgui.SelectableFlagsNone, imgui.Vec2{}) {
-					// If the list is not already selected, add it to the selected list IDs
+
+				if imgui.SelectableBoolV(list.Title, isSelected, imgui.SelectableFlagsNone, itemSize) {
 					if !isSelected {
 						types.State.CurrentListIds = append(types.State.CurrentListIds, list.Id)
 					} else {
@@ -107,8 +85,11 @@ func RenderMenubar() {
 					}
 				}
 			}
+			imgui.PopStyleVarV(2)
 			imgui.EndMenu()
 		}
+
+		imgui.PopStyleVarV(2)
 		imgui.EndMainMenuBar()
 	}
 }
